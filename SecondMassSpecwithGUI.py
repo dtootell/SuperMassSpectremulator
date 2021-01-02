@@ -242,12 +242,12 @@ class InitialisationMassSpec(QtWidgets.QMainWindow,second_massspec_gui.Ui_MainWi
         coll_type = ['','Faraday','Multiplier']
         for j in range(row_cnt):
             self.Peaks_tableWidget.setItem(j, 3, QtWidgets.QTableWidgetItem())
-            coll_comboBox = QtWidgets.QComboBox()
-            coll_comboBox.addItems(coll_type)
-            self.Peaks_tableWidget.setCellWidget(j, 3, coll_comboBox)
+            self.coll_comboBox = QtWidgets.QComboBox()
+            self.coll_comboBox.addItems(coll_type)
+            self.Peaks_tableWidget.setCellWidget(j, 3, self.coll_comboBox)
 
-        # Ar40V = 2.0318
-        # self.a_peak = Peak(35.964,Ar40V/298.5, 6, 'F')#,deltaM=0.1)
+        Ar40V = 2.0318
+        self.a_peak = Peak(35.964,Ar40V/298.5, 6, 'F')#,deltaM=0.1)
         # #self.b_peak = Peak(35.964, 729551, 6, 'F')#,deltaM=0.1)
         # self.c = Peak(37.964, Ar40V/1585, 6, 'F')#,deltaM=0.1)
         # self.d = Peak(39.964, Ar40V, 6, 'F')#,deltaM=0.1)
@@ -333,6 +333,7 @@ class InitialisationMassSpec(QtWidgets.QMainWindow,second_massspec_gui.Ui_MainWi
             print("No Peaks to delete!")
 
     def show_peaks(self,peak_data):
+        print('running show peaks')
         peak_data.append('F')
         peak_inst = Peak(*peak_data)
 
@@ -341,6 +342,7 @@ class InitialisationMassSpec(QtWidgets.QMainWindow,second_massspec_gui.Ui_MainWi
         self.peak_workthread.peak_signal.connect(self.show_peaks)
         self.peak_workthread.peak_del_signal.connect(self.delete_peaks)
         print("peak gen button clicked")
+        #self.QtWidgets.QMessageBox.information(self, 'JESUS!','Jesus!')
         self.peak_workthread.start()
 
 
