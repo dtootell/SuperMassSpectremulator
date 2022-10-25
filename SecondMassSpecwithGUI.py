@@ -4,17 +4,15 @@ import random
 import math
 import numpy as np
 from scipy.interpolate import UnivariateSpline
-import scipy
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal, QObject
 import second_massspec_gui
 import COM_ports
 import CollectorImport
-import PyQt5
-import gc
-import requests
 
 
+
+beam_decay_rate = 1.0 # % per min
 
 class Resolution:
 
@@ -30,20 +28,22 @@ class Resolution:
 class Peak:
     list_of_all_peaks = []
 
-    def __init__(self, *args,deltaM=0.1):#mass,ion_beam_intensity,collector_ch,collector_type,deltaM=0.1):
+    def __init__(self, *args):#,deltaM=0.1):#mass,ion_beam_intensity,collector_ch,collector_type,deltaM=0.1):
         self.list_of_all_peaks.append(self)
         self.mass = float(args[0])
-        self.lowmass = self.mass - (deltaM * self.mass)
-        self.highmass = self.mass + (deltaM * self.mass)
+        # self.lowmass = self.mass - (deltaM * self.mass)
+        # self.highmass = self.mass + (deltaM * self.mass)
         self.ion_beam_intensity = float(args[1])
         self.collector_ch = int(args[2])
         self.collector_type = args[3]
 
-    def drift(self,drift_rate):
-        self.mass = self.mass - (self.mass*(drift_rate*(1e-6/60)))
-        self.lowmass = self.mass - (deltaM * self.mass)
-        self.highmass = self.mass + (deltaM * self.mass)
-        return self.mass, self.lowmass, self.highmass
+    def drift(self,drift_rate,int_time):
+
+        self.mass = self.mass + (self.mass * ((float(drift_rate)* (1e-6 /1800))*int_time))
+        print(self.mass,'   ', int_time, '    ', drift_rate)
+        # self.lowmass = self.mass - (deltaM * self.mass)
+        # self.highmass = self.mass + (deltaM * self.mass)
+        return self.mass#, self.lowmass, self.highmass
 
     def __del__(self):
         print("PEAK Instance Deleted")
@@ -72,7 +72,6 @@ def Ion_counting_data(int_time):
             IC_noise[i] = 1
 
     #IC_data = 'IC:' + ','.join(str(e) for e in ion_noise)
-
     return IC_noise
 
 def Faraday_baseline_noise(int_time,detector_type):
@@ -177,24 +176,7 @@ def initialise(res,MRP):
     global optics,deltaM
     optics = Resolution(res,MRP) # resolution, Mass resolving power
     deltaM = optics.delta_mass()
-
     print('Mass spectrometer initialised')
-
-
-    #global a_peak, b_peak,c,d
-    # a_peak = Peak(37.964, deltaM, 1.27, 6, 'F')
-    # b_peak = Peak(37.964, deltaM, 3.6, 7, 'F')
-    # c = Peak(37.964, deltaM, 2,8, 'F')
-    # d = Peak(39.9624, deltaM, 1235,3, 'M')# Ax 1e11
-    # e = Peak(40.0313,deltaM,170, 3, 'M')
-    # jj = Peak(3.0160293191, deltaM, 250, 1, 'M')  # Ax 1e11
-    # kk = Peak(3.021927, deltaM, 800, 1, 'M')  # Ax 1e11
-    # ll = Peak(3.023475, deltaM, 300, 1, 'M')
-    # mm = Peak(3.998, deltaM, 5.0, 8, 'F')
-
-
-
-
     return optics,deltaM
 
 def COMPort_connect():
@@ -207,20 +189,7 @@ def COMPort_connect():
         print(com_port,"cannot connect; try different COM Port number")
     return ser
 
-# optics, deltaM = initialise()
 
-# detector_type = detector_array()
-#
-# print (detector_type)
-#define peaks
-#a=Peak(37.964,deltaM,1.6e-1,6,'F')#Ax 1e11
-# b=Peak(37.964,deltaM,1.6e-1,7,'F')#H1 1e12
-# c=Peak(37.964,deltaM,1.6e-2,8,'F')#H2 ATONA
-# #d=Peak(37.990,deltaM,2.96e-2,6,'F')
-# #e=Peak(37.964,deltaM,9.92e-4,3,'F')
-# f=Peak(37.964,deltaM,1000000,3,'M')
-
-#
 
 class InitialisationMassSpec(QtWidgets.QMainWindow,second_massspec_gui.Ui_MainWindow):
 
@@ -230,7 +199,7 @@ class InitialisationMassSpec(QtWidgets.QMainWindow,second_massspec_gui.Ui_MainWi
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)
-        self.setWindowIcon(QtGui.QIcon(r'C:\Users\dtoot\Pictures\peaks.png'))
+        self.setWindowIcon(QtGui.QIcon(r'pink bird.png'))
         self.pushButton.clicked.connect(self.initialise_mass_spec)
         self.pushButton_start_em.clicked.connect(self.data_stream)
         self.pushButton_stop_em.clicked.connect(self.data_stream_stop)
@@ -238,16 +207,23 @@ class InitialisationMassSpec(QtWidgets.QMainWindow,second_massspec_gui.Ui_MainWi
         self.pushButton_peak_gen.clicked.connect(self.peak_generator)
         self.comboBox.addItems(COM_ports.COM_ports())
         self.CollectorTableView.setModel(CollectorImport.create_model())
-        row_cnt = self.Peaks_tableWidget.rowCount()
-        coll_type = ['','Faraday','Multiplier']
-        for j in range(row_cnt):
-            self.Peaks_tableWidget.setItem(j, 3, QtWidgets.QTableWidgetItem())
-            self.coll_comboBox = QtWidgets.QComboBox()
-            self.coll_comboBox.addItems(coll_type)
-            self.Peaks_tableWidget.setCellWidget(j, 3, self.coll_comboBox)
+
+        # row_cnt = self.Peaks_tableWidget.rowCount()
+        # coll_type = ['','Faraday','Multiplier']
+        # for j in range(row_cnt):
+        #     self.Peaks_tableWidget.setItem(j, 3, QtWidgets.QTableWidgetItem())
+        #     self.coll_comboBox = QtWidgets.QComboBox()
+        #     self.coll_comboBox.addItems(coll_type)
+        #     self.Peaks_tableWidget.setCellWidget(j, 3, self.coll_comboBox)
 
         Ar40V = 2.0318
-        self.a_peak = Peak(35.964,Ar40V/298.5, 6, 'F')#,deltaM=0.1)
+        self.a_peak = Peak(35.964,Ar40V/298.5, 1, 'F')#,deltaM=0.1)
+        self.a_peak = Peak(35.964, Ar40V, 9, 'F')  # ,deltaM=0.1)
+        self.a_peak = Peak(3.016, 1.25, 5, 'F')  # ,deltaM=0.1)
+        self.aa_peak = Peak(3.01602932,115, 1, 'M')
+        self.aaA_peak = Peak(3.0219272, 660, 1, 'M')
+        self.aaAA_peak = Peak(3.023475, 880, 1, 'M')
+        self.aaAAA_peak = Peak(3.995,1.25,5,'F')
         # #self.b_peak = Peak(35.964, 729551, 6, 'F')#,deltaM=0.1)
         # self.c = Peak(37.964, Ar40V/1585, 6, 'F')#,deltaM=0.1)
         # self.d = Peak(39.964, Ar40V, 6, 'F')#,deltaM=0.1)
@@ -335,7 +311,7 @@ class InitialisationMassSpec(QtWidgets.QMainWindow,second_massspec_gui.Ui_MainWi
     def show_peaks(self,peak_data):
         print('running show peaks')
         peak_data.append('F')
-        peak_inst = Peak(*peak_data)
+        Peak(*peak_data)
 
     def peak_generator(self):
         self.peak_workthread = PeakWorkThread()
@@ -357,7 +333,8 @@ class InitialisationMassSpec(QtWidgets.QMainWindow,second_massspec_gui.Ui_MainWi
         self.workthread.start()
 
     def data_stream_stop(self):
-        self.workthread.terminate()
+        #self.workthread.terminate() try quit() instead of terminate()
+        self.workthread.quit()
         self.pushButton_start_em.setEnabled(True)
         self.pushButton_stop_em.setEnabled(False)
         print ("**** Stopped data stream *****")
@@ -391,6 +368,7 @@ class PeakWorkThread(QtCore.QThread):
 
         self.peak_del_signal.emit()
 
+
         m = mass_spec_app.Peaks_tableWidget.rowCount()
         n = mass_spec_app.Peaks_tableWidget.columnCount()
         peak_data = []
@@ -399,8 +377,7 @@ class PeakWorkThread(QtCore.QThread):
                 cell_item = mass_spec_app.Peaks_tableWidget.item(i,j)
                 if cell_item != None:
                     cell_text = cell_item.text()
-                    if j == (n - 1):
-                        cell_text = mass_spec_app.coll_comboBox.currentText()
+
                     if cell_text != '':
                         peak_data.append(cell_text)
                 else:
@@ -418,30 +395,48 @@ class WorkThread(QtCore.QThread):
     def __init__(self):
         #super(WorkThread,self).__init__(parent)
         QtCore.QThread.__init__(self) #,parent)
-        #self.ser = ser
 
+        #self.ser = ser
 
     def __del__(self):
         self.wait()
 
-    def run(self):
+    def source_consump_box(self):
 
+        if mass_spec_app.checkBoxSourceConsump.isChecked():
+            source_cons = mass_spec_app.textEditSourceConsump.toPlainText()
+
+            print("box ticked")
+
+        else:
+            print('box unticked')
+
+            source_cons= 0.0
+        beam_decay_rate = source_cons
+        return beam_decay_rate
+
+
+    def run(self):
+        #mass_spec_app.checkBoxSourceConsump.stateChanged.connect(self.source_consump_box)
         #ser = COMPort_connect()
+
         toc = 0.0001
         tic = 0.0
         int_time = 0.2
         t_start = time.time()
 
         while True:
+
             calc_time = (toc - tic)*1000.0
             cycle_time = "{:.2f}ms".format(calc_time)
 
             out = mass_spec_app.ser.read_until(b'\r', 1024)
             out = str(out.decode('utf-8'))
+            print(out)
             out_parse = out.split(',')
 
             if out != '':
-                #print (out)
+                #print ('Output = ',out)
                 if out[0] == 'P':
                     int_time = int(out[1], 16) / 10.0
                     print ('Integration time = ', int_time)
@@ -483,11 +478,17 @@ class WorkThread(QtCore.QThread):
                 # out_parse[5] = Magnet mass
                 t_end = time.time()
                 elapsed_time = t_end - t_start
+                # if mass_spec_app.checkBoxSourceConsump.isChecked():
+                #     elapsed_time = t_end - t_start
+                # else:
+                #     t_start = 0.0
+
                 # print 'Timer (', elapsed_time, ' s')
 
                 if out_parse[0] == 'R3':
-                    #print(out)
+                    print(out_parse[5])
                     tic = time.perf_counter()
+
                     requestMass = float(out_parse[5])
                     fmtRMass = '%7.4f' % requestMass
                     int_time_B = float(out_parse[4]) * int_time
@@ -505,12 +506,41 @@ class WorkThread(QtCore.QThread):
                         collector_data_B = [0.0] * 10
                         B_data = False
                     for peak in Peak.list_of_all_peaks:
-                        # peak.drift(1)
-                        # print(peak.mass)
+                        if mass_spec_app.checkBoxDirft.isChecked():
+                            drift_rate = mass_spec_app.textEditMagDrift.toPlainText()
+                            print('drift =',drift_rate)
+                            if drift_rate != '':
+                                peak.drift(drift_rate,int_time)
 
-                        if requestMass >= peak.lowmass and requestMass <= peak.highmass:
-                            ionBeam_alpha = peak_shape_definition(requestMass, peak) * (
-                                peak.ion_beam_intensity)  * (0.995**(elapsed_time/60.0))
+
+                        # if requestMass >= peak.lowmass and requestMass <= peak.highmass:
+                        #     ionBeam_alpha = peak_shape_definition(requestMass, peak) * (
+                        #         peak.ion_beam_intensity)#  * (0.995**(elapsed_time/60.0))
+                        #     print('RQ_Mass = ',requestMass,'    PK_Low = ',peak.lowmass)
+                        # else:
+                        #     print(random.random())
+
+                        # if mass_spec_app.checkBoxSourceConsump.isChecked():
+                        #     beam_decay_rate = mass_spec_app.textEditSourceConsump.toPlainText()
+                        #
+                        # else:
+                        #     beam_decay_rate = 0.0
+                        # #beam_decay_rate = self.source_consump_box()
+                        if mass_spec_app.checkBoxSourceConsump.isChecked():
+                            source_cons = mass_spec_app.textEditSourceConsump.toPlainText()
+                            if source_cons != '':
+                                #print(type(source_cons))
+                                beam_decay_rate = float(source_cons)
+
+                        else:
+                            print('unticked')
+                            beam_decay_rate = 0.7
+
+
+                        print('Beam decay rate = ', beam_decay_rate, ' %')
+                        beam_decay = (1-(float(beam_decay_rate)/100.0))
+                        ionBeam_alpha = peak_shape_definition(requestMass, peak) * (peak.ion_beam_intensity) * (beam_decay**(elapsed_time/60.0))
+
 
                         ionBeamSignal = ionBeamSignal + ionBeam_alpha
                         ionBeam_alpha = 0.0
@@ -528,8 +558,9 @@ class WorkThread(QtCore.QThread):
                     #print(collector_data_A)
 
                     self.data_signal.emit(collector_data_A,collector_data_B,IC_data,int_time,fmtRMass,cycle_time)
-
                     ser.write(data_stream.encode(encoding="utf-8", errors="strict"))
+                    #print(data_stream)
+
 
 
                 else:
@@ -542,7 +573,7 @@ class WorkThread(QtCore.QThread):
             toc=time.perf_counter()
 
 
-        return
+            #return
 
 
 
@@ -573,5 +604,6 @@ if __name__ == "__main__":
 
 
 #C:\Python27\Lib\site-packages\PyQt4>pyuic4 -x input.ui -o output.py
+#navigte to pyuic5.exe location (C:\Users\dtoot\PycharmProjects\robust regression with direct ratio calculations.py\Scripts)
 #pyuic5 -x "C:\Users\dtoot\Desktop\HOME FOLDER\Python files\untitledmassspec4.ui" -o "C:\Users\dtoot\Desktop\HOME FOLDER\Python files\second_massspec_gui.py"
 

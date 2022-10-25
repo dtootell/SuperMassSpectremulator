@@ -9,7 +9,7 @@ collector_HWChannel = []
 
 def get_collector_table():
 
-    root = ET.parse(r'C:\ProgramData\Isotopx\NGX\Collector.MSCFG')
+    root = ET.parse(r'C:\ProgramData\Isotopx\Isolinx\Collector.MSCFG')
 
     for collector in root.iter('ID'):
         collector_ID.append(collector.text)
@@ -42,7 +42,7 @@ class pandasModel(QAbstractTableModel):
     def rowCount(self, parent=None):
         return self._data.shape[0]
 
-    def columnCount(self, parnet=None):
+    def columnCount(self, parent=None):
         return self._data.shape[1]
 
     def data(self, index, role=Qt.DisplayRole):

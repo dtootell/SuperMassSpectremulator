@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1495, 1265)
+        MainWindow.resize(1707, 1265)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -328,9 +328,21 @@ class Ui_MainWindow(object):
         self.pushButton_peak_gen = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_peak_gen.setGeometry(QtCore.QRect(1160, 770, 161, 51))
         self.pushButton_peak_gen.setObjectName("pushButton_peak_gen")
+        self.checkBoxDirft = QtWidgets.QCheckBox(self.centralwidget)
+        self.checkBoxDirft.setGeometry(QtCore.QRect(1190, 50, 291, 31))
+        self.checkBoxDirft.setObjectName("checkBoxDirft")
+        self.checkBoxSourceConsump = QtWidgets.QCheckBox(self.centralwidget)
+        self.checkBoxSourceConsump.setGeometry(QtCore.QRect(1190, 100, 361, 31))
+        self.checkBoxSourceConsump.setObjectName("checkBoxSourceConsump")
+        self.textEditMagDrift = QtWidgets.QTextEdit(self.centralwidget)
+        self.textEditMagDrift.setGeometry(QtCore.QRect(1030, 40, 140, 41))
+        self.textEditMagDrift.setObjectName("textEditMagDrift")
+        self.textEditSourceConsump = QtWidgets.QTextEdit(self.centralwidget)
+        self.textEditSourceConsump.setGeometry(QtCore.QRect(1030, 100, 140, 41))
+        self.textEditSourceConsump.setObjectName("textEditSourceConsump")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1495, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1707, 38))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -370,6 +382,8 @@ class Ui_MainWindow(object):
         self.Peaks_tableWidget.setSortingEnabled(False)
         self.Peaks_tableWidget.setSortingEnabled(__sortingEnabled)
         self.pushButton_peak_gen.setText(_translate("MainWindow", "Read Peaks"))
+        self.checkBoxDirft.setText(_translate("MainWindow", "Magnet drift ppm/30min"))
+        self.checkBoxSourceConsump.setText(_translate("MainWindow", "Source consumption % per min"))
 
 
 if __name__ == "__main__":
