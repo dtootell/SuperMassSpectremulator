@@ -183,7 +183,7 @@ def COMPort_connect():
     global ser
 
     try:
-        ser = serial.Serial(port=com_port, baudrate=19200, timeout=0.1, write_timeout=0.1)
+        ser = serial.Serial(port=com_port, baudrate=19200, timeout=10, write_timeout=0.1)
         print(com_port)
     except serial.serialutil.SerialException:
         print(com_port,"cannot connect; try different COM Port number")
@@ -406,10 +406,10 @@ class WorkThread(QtCore.QThread):
         if mass_spec_app.checkBoxSourceConsump.isChecked():
             source_cons = mass_spec_app.textEditSourceConsump.toPlainText()
 
-            print("box ticked")
+            #print("box ticked")
 
         else:
-            print('box unticked')
+            #print('box unticked')
 
             source_cons= 0.0
         beam_decay_rate = source_cons
@@ -432,7 +432,7 @@ class WorkThread(QtCore.QThread):
 
             out = mass_spec_app.ser.read_until(b'\r', 1024)
             out = str(out.decode('utf-8'))
-            print(out)
+            #print(out)
             out_parse = out.split(',')
 
             if out != '':
@@ -486,7 +486,7 @@ class WorkThread(QtCore.QThread):
                 # print 'Timer (', elapsed_time, ' s')
 
                 if out_parse[0] == 'R3':
-                    print(out_parse[5])
+                    #print(out_parse[5])
                     tic = time.perf_counter()
 
                     requestMass = float(out_parse[5])
@@ -508,9 +508,10 @@ class WorkThread(QtCore.QThread):
                     for peak in Peak.list_of_all_peaks:
                         if mass_spec_app.checkBoxDirft.isChecked():
                             drift_rate = mass_spec_app.textEditMagDrift.toPlainText()
-                            print('drift =',drift_rate)
+                            #print('drift =',drift_rate)
                             if drift_rate != '':
                                 peak.drift(drift_rate,int_time)
+
 
 
                         # if requestMass >= peak.lowmass and requestMass <= peak.highmass:
@@ -533,11 +534,11 @@ class WorkThread(QtCore.QThread):
                                 beam_decay_rate = float(source_cons)
 
                         else:
-                            print('unticked')
+                            #print('unticked')
                             beam_decay_rate = 0.7
 
 
-                        print('Beam decay rate = ', beam_decay_rate, ' %')
+                        #print('Beam decay rate = ', beam_decay_rate, ' %')
                         beam_decay = (1-(float(beam_decay_rate)/100.0))
                         ionBeam_alpha = peak_shape_definition(requestMass, peak) * (peak.ion_beam_intensity) * (beam_decay**(elapsed_time/60.0))
 
@@ -558,7 +559,7 @@ class WorkThread(QtCore.QThread):
                     #print(collector_data_A)
 
                     self.data_signal.emit(collector_data_A,collector_data_B,IC_data,int_time,fmtRMass,cycle_time)
-                    ser.write(data_stream.encode(encoding="utf-8", errors="strict"))
+                    ser.write(data_stream.encode())#encoding="utf-8", errors="strict"))
                     #print(data_stream)
 
 

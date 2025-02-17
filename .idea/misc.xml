@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.6 virtualenv at C:\Users\dtoot\PycharmProjects\robust regression with direct ratio calculations.py" project-jdk-type="Python SDK" />
+  <component name="Black">
+    <option name="sdkName" value="Python 3.8 (SuperMassSpectremulator)" />
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.8 (SuperMassSpectremulator)" project-jdk-type="Python SDK" />
 </project>
